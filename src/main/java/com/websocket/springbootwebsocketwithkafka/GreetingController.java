@@ -1,5 +1,6 @@
 package com.websocket.springbootwebsocketwithkafka;
 
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -41,5 +42,11 @@ public class GreetingController {
         this.template.convertAndSend("/topic/greetings",
                 username + ", Hello! This message sent to the specified destination " +
                         "using SimpMessagingTemplate (/app/simpTemplate -> /topic/greetings)");
+    }
+
+    @KafkaListener(topics="kafka-topic", groupId = "groupId")
+    public void greetingWithKafka(String message) throws Exception {
+        Thread.sleep(15000);
+        this.template.convertAndSend("/topic/greetings", "Hello from " + message);
     }
 }
