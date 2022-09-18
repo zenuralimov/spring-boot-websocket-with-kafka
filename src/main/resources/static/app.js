@@ -42,6 +42,7 @@ function sendName() {
     var name = $("#name");
     stompClient.send("/app/mapped", {}, name.val());
     stompClient.send("/app/sendTo", {}, name.val());
+    stompClient.send("/app/simpTemplate", {}, name.val());
 }
 
 function showGreeting(message) {
