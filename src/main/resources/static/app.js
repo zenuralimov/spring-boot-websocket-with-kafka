@@ -24,6 +24,9 @@ function connect() {
         stompClient.subscribe('/topic/mapped', function (message) {
             showGreeting(message.body);
         });
+        stompClient.subscribe('/topic/greetings', function (message) {
+            showGreeting(message.body);
+        });
     });
 }
 
@@ -36,7 +39,9 @@ function disconnect() {
 }
 
 function sendName() {
-    stompClient.send("/app/mapped", {}, $("#name").val());
+    var name = $("#name");
+    stompClient.send("/app/mapped", {}, name.val());
+    stompClient.send("/app/sendTo", {}, name.val());
 }
 
 function showGreeting(message) {
