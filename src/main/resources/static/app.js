@@ -21,6 +21,9 @@ function connect() {
         stompClient.subscribe('/app/directly', function (message) {
             showGreeting(message.body);
         });
+        stompClient.subscribe('/topic/mapped', function (message) {
+            showGreeting(message.body);
+        });
     });
 }
 
@@ -30,6 +33,10 @@ function disconnect() {
     }
     setConnected(false);
     console.log("Disconnected");
+}
+
+function sendName() {
+    stompClient.send("/app/mapped", {}, $("#name").val());
 }
 
 function showGreeting(message) {
@@ -42,5 +49,6 @@ $(function () {
     });
     $( "#connect" ).click(function() { connect(); });
     $( "#disconnect" ).click(function() { disconnect(); });
+    $( "#send" ).click(function() { sendName(); });
 });
 
