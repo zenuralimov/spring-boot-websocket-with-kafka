@@ -1,6 +1,8 @@
 package com.websocket.springbootwebsocketwithkafka;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -10,10 +12,15 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class GreetingController {
 
-    private final SimpMessagingTemplate template;
+    @Value("${kafka.topic}")
+    private String kafkaTopic;
 
-    public GreetingController(SimpMessagingTemplate template) {
+    private final SimpMessagingTemplate template;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public GreetingController(SimpMessagingTemplate template, KafkaTemplate<String, String> kafkaTemplate) {
         this.template = template;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @SubscribeMapping("/directly")
@@ -31,22 +38,25 @@ public class GreetingController {
     @MessageMapping("/sendTo")
     @SendTo("/topic/greetings")
     public String greetingSendTo(String username) throws Exception {
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         return username + ", Hello! This message sent to the specified destination " +
                 "(/app/sendTo -> /topic/greetings)";
     }
 
     @MessageMapping("/simpTemplate")
     public void greetingWithSimpTemplate(String username) throws Exception {
-        Thread.sleep(3000);
+        kafkaTemplate.send(kafkaTopic, username);
+        Thread.sleep(5000);
         this.template.convertAndSend("/topic/greetings",
                 username + ", Hello! This message sent to the specified destination " +
                         "using SimpMessagingTemplate (/app/simpTemplate -> /topic/greetings)");
     }
 
-    @KafkaListener(topics="kafka-topic", groupId = "groupId")
-    public void greetingWithKafka(String message) throws Exception {
-        Thread.sleep(15000);
-        this.template.convertAndSend("/topic/greetings", "Hello from " + message);
+    @KafkaListener(topics = "kafka-topic", groupId = "groupId")
+    public void greetingWithKafka(String username) throws Exception {
+        Thread.sleep(7000);
+        this.template.convertAndSend("/topic/greetings", username +
+                ", Hello! This message sent through Topic Kafka to the specified destination " +
+                "using SimpMessagingTemplate (/app/simpTemplate -> kafka-topic -> /topic/greetings)");
     }
 }
